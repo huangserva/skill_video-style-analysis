@@ -1,0 +1,51 @@
+{
+  "video_info": {
+    "file_path": "real_video.mp4",
+    "duration": 49.43,
+    "resolution": "1280x720",
+    "aspect_ratio": "16:9",
+    "frame_rate": 30,
+    "codec": "HEVC (H.265)",
+    "pixel_format": "YUV420P"
+  },
+  "audio_info": {
+    "duration": 49.43,
+    "sample_rate": 44100,
+    "channels": 1,
+    "codec": "PCM",
+    "speech_ratio": 0.798,
+    "avg_amplitude": 3094.10,
+    "max_amplitude": 32767
+  },
+  "visual_analysis": {
+    "style": "电影感",
+    "resolution": "高清(720p)",
+    "aspect_ratio": "16:9 (标准宽屏)",
+    "frame_rate": "30fps (标准帧率)",
+    "composition": "标准构图",
+    "color_tone": "标准色彩",
+    "camera_movement": "稳定镜头",
+    "editing_style": "流畅剪辑"
+  },
+  "audio_analysis": {
+    "has_narration": true,
+    "speech_ratio": "79.8%",
+    "voice_style": {
+      "tone": "标准语调",
+      "speed": "中等语速",
+      "emotion": "平静叙述"
+    },
+    "quality": "清晰音频"
+  },
+  "narrative_features": {
+    "theme": "叙事类视频",
+    "tone": "讲述",
+    "pacing": "匀速"
+  },
+  "technical_specs": {
+    "video_bitrate": "~548 kbps",
+    "audio_bitrate": "705 kbps",
+    "file_size": "3.3 MB",
+    "format": "MP4"
+  }
+}

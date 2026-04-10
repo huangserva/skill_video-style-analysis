@@ -1,0 +1,21 @@
+{
+  "_template_description": "步骤3.5输出 - 叙事线分析。Claude 基于 ASR 文本分析后生成此文件。",
+  "_output_path": "output/analysis/narrative_analysis.json",
+
+  "analysis_level": "level_1",
+  "narrative_theme": "简要描述故事主题，如：富豪伪装穷人的爱情故事 + 女主逆袭",
+  "narrator": "叙述者身份，如：女主（女性）/ 旁白 / 第三人称",
+  "characters_from_text": [
+    {
+      "name": "角色名（从ASR文本中识别）",
+      "role": "角色在故事中的身份，如：男主，千亿财团继承人",
+      "identity": "角色真实身份，如：千亿财团唯一继承人"
+    }
+  ],
+  "narrative_arc": {
+    "act_1": {"name": "阶段名称，如：伪装", "time_range": "0-15s", "description": "阶段描述"},
+    "act_2": {"name": "发展", "time_range": "15-35s", "description": "阶段描述"},
+    "act_3": {"name": "高潮/结局", "time_range": "35-49.5s", "description": "阶段描述"}
+  },
+  "confidence_warning": "仅 Level 2/3 时填写，如：ASR文本不完整，叙事线基于视觉推断"
+}

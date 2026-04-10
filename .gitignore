@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# API keys (secrets)
+config/api_keys.yaml
+
+# Audio/Video binary files
+*.wav
+*.mp3
+*.mp4
+
+# Keyframe images (sample data)
+frames_*.jpg
+
+# Output directory
+output/
+
+# InsightFace models
+.insightface/
+
+# OS
+.DS_Store

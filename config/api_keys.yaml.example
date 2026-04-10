@@ -1,0 +1,10 @@
+# API 密钥配置（示例）
+# 复制为 api_keys.yaml 填入真实密钥
+
+volcengine:
+  api_key: "your-volcengine-api-key-here"
+  # api_base: ""  # 可选，覆盖 api_config.yaml 中的 api_base
+
+# 如果使用其他 provider，在这里添加
+# apimart:
+#   api_key: "your-apimart-api-key"

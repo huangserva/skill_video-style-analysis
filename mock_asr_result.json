@@ -1,0 +1,158 @@
+{
+  "video_path": "/workspace/projects/02665ab37fe07cbadbca92af1a9d2a3e.mp4",
+  "language": "zh",
+  "full_text": "我以前总觉得，爱情就是轰轰烈烈的誓言，是海枯石烂的承诺。直到遇见他，我才明白，真正的爱情，是平淡日子里的细水长流。他不会说太多甜言蜜语，但会在我生病时彻夜守候；他不会送昂贵的礼物，但会记住我每一个小习惯。每天早上醒来，看到他为我准备的热粥，我就知道，这就是我想要的生活。我们不需要太多奢华，只要彼此陪伴，就是最大的幸福。",
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.0,
+      "end": 5.5,
+      "text": "我以前总觉得，爱情就是轰轰烈烈的誓言，是海枯石烂的承诺。",
+      "words": [
+        {"word": "我", "start": 0.0, "end": 0.3, "confidence": 0.95},
+        {"word": "以前", "start": 0.3, "end": 0.8, "confidence": 0.96},
+        {"word": "总觉得", "start": 0.8, "end": 1.4, "confidence": 0.94},
+        {"word": "爱情", "start": 1.4, "end": 1.9, "confidence": 0.97},
+        {"word": "就是", "start": 1.9, "end": 2.3, "confidence": 0.96},
+        {"word": "轰轰烈烈", "start": 2.3, "end": 3.0, "confidence": 0.95},
+        {"word": "的", "start": 3.0, "end": 3.2, "confidence": 0.98},
+        {"word": "誓言", "start": 3.2, "end": 3.8, "confidence": 0.96},
+        {"word": "是", "start": 3.8, "end": 4.0, "confidence": 0.97},
+        {"word": "海枯石烂", "start": 4.0, "end": 4.7, "confidence": 0.95},
+        {"word": "的", "start": 4.7, "end": 4.9, "confidence": 0.98},
+        {"word": "承诺", "start": 4.9, "end": 5.5, "confidence": 0.96}
+      ]
+    },
+    {
+      "id": 1,
+      "start": 5.5,
+      "end": 10.0,
+      "text": "直到遇见他，我才明白，真正的爱情，是平淡日子里的细水长流。",
+      "words": [
+        {"word": "直到", "start": 5.5, "end": 5.9, "confidence": 0.95},
+        {"word": "遇见", "start": 5.9, "end": 6.4, "confidence": 0.96},
+        {"word": "他", "start": 6.4, "end": 6.6, "confidence": 0.97},
+        {"word": "我", "start": 6.6, "end": 6.8, "confidence": 0.98},
+        {"word": "才", "start": 6.8, "end": 7.0, "confidence": 0.96},
+        {"word": "明白", "start": 7.0, "end": 7.5, "confidence": 0.95},
+        {"word": "真正的", "start": 7.5, "end": 8.0, "confidence": 0.96},
+        {"word": "爱情", "start": 8.0, "end": 8.5, "confidence": 0.97},
+        {"word": "是", "start": 8.5, "end": 8.7, "confidence": 0.98},
+        {"word": "平淡", "start": 8.7, "end": 9.2, "confidence": 0.95},
+        {"word": "日子", "start": 9.2, "end": 9.6, "confidence": 0.96},
+        {"word": "里的", "start": 9.6, "end": 9.8, "confidence": 0.97},
+        {"word": "细水长流", "start": 9.8, "end": 10.0, "confidence": 0.95}
+      ]
+    },
+    {
+      "id": 2,
+      "start": 10.0,
+      "end": 16.0,
+      "text": "他不会说太多甜言蜜语，但会在我生病时彻夜守候；",
+      "words": [
+        {"word": "他", "start": 10.0, "end": 10.3, "confidence": 0.97},
+        {"word": "不会", "start": 10.3, "end": 10.8, "confidence": 0.96},
+        {"word": "说", "start": 10.8, "end": 11.0, "confidence": 0.98},
+        {"word": "太多", "start": 11.0, "end": 11.5, "confidence": 0.95},
+        {"word": "甜言蜜语", "start": 11.5, "end": 12.3, "confidence": 0.96},
+        {"word": "但", "start": 12.3, "end": 12.5, "confidence": 0.97},
+        {"word": "会", "start": 12.5, "end": 12.7, "confidence": 0.98},
+        {"word": "在", "start": 12.7, "end": 12.9, "confidence": 0.96},
+        {"word": "我", "start": 12.9, "end": 13.1, "confidence": 0.97},
+        {"word": "生病", "start": 13.1, "end": 13.6, "confidence": 0.95},
+        {"word": "时", "start": 13.6, "end": 13.8, "confidence": 0.96},
+        {"word": "彻夜", "start": 13.8, "end": 14.3, "confidence": 0.95},
+        {"word": "守候", "start": 14.3, "end": 16.0, "confidence": 0.96}
+      ]
+    },
+    {
+      "id": 3,
+      "start": 16.0,
+      "end": 22.0,
+      "text": "他不会送昂贵的礼物，但会记住我每一个小习惯。",
+      "words": [
+        {"word": "他", "start": 16.0, "end": 16.3, "confidence": 0.97},
+        {"word": "不会", "start": 16.3, "end": 16.8, "confidence": 0.96},
+        {"word": "送", "start": 16.8, "end": 17.0, "confidence": 0.98},
+        {"word": "昂贵", "start": 17.0, "end": 17.6, "confidence": 0.95},
+        {"word": "的", "start": 17.6, "end": 17.8, "confidence": 0.96},
+        {"word": "礼物", "start": 17.8, "end": 18.4, "confidence": 0.97},
+        {"word": "但", "start": 18.4, "end": 18.6, "confidence": 0.98},
+        {"word": "会", "start": 18.6, "end": 18.8, "confidence": 0.96},
+        {"word": "记住", "start": 18.8, "end": 19.4, "confidence": 0.95},
+        {"word": "我", "start": 19.4, "end": 19.6, "confidence": 0.97},
+        {"word": "每一个", "start": 19.6, "end": 20.2, "confidence": 0.96},
+        {"word": "小", "start": 20.2, "end": 20.4, "confidence": 0.95},
+        {"word": "习惯", "start": 20.4, "end": 22.0, "confidence": 0.96}
+      ]
+    },
+    {
+      "id": 4,
+      "start": 22.0,
+      "end": 29.0,
+      "text": "每天早上醒来，看到他为我准备的热粥，我就知道，这就是我想要的生活。",
+      "words": [
+        {"word": "每天", "start": 22.0, "end": 22.6, "confidence": 0.96},
+        {"word": "早上", "start": 22.6, "end": 23.2, "confidence": 0.95},
+        {"word": "醒来", "start": 23.2, "end": 23.8, "confidence": 0.97},
+        {"word": "看到", "start": 23.8, "end": 24.4, "confidence": 0.96},
+        {"word": "他", "start": 24.4, "end": 24.6, "confidence": 0.97},
+        {"word": "为", "start": 24.6, "end": 24.8, "confidence": 0.98},
+        {"word": "我", "start": 24.8, "end": 25.0, "confidence": 0.96},
+        {"word": "准备", "start": 25.0, "end": 25.6, "confidence": 0.95},
+        {"word": "的", "start": 25.6, "end": 25.8, "confidence": 0.96},
+        {"word": "热粥", "start": 25.8, "end": 26.4, "confidence": 0.97},
+        {"word": "我", "start": 26.4, "end": 26.6, "confidence": 0.98},
+        {"word": "就", "start": 26.6, "end": 26.8, "confidence": 0.96},
+        {"word": "知道", "start": 26.8, "end": 27.4, "confidence": 0.95},
+        {"word": "这", "start": 27.4, "end": 27.6, "confidence": 0.97},
+        {"word": "就是", "start": 27.6, "end": 28.0, "confidence": 0.96},
+        {"word": "我", "start": 28.0, "end": 28.2, "confidence": 0.95},
+        {"word": "想要", "start": 28.2, "end": 28.8, "confidence": 0.96},
+        {"word": "的", "start": 28.8, "end": 29.0, "confidence": 0.97}
+      ]
+    },
+    {
+      "id": 5,
+      "start": 29.0,
+      "end": 35.0,
+      "text": "我们不需要太多奢华，只要彼此陪伴，就是最大的幸福。",
+      "words": [
+        {"word": "我们", "start": 29.0, "end": 29.6, "confidence": 0.96},
+        {"word": "不需要", "start": 29.6, "end": 30.4, "confidence": 0.95},
+        {"word": "太多", "start": 30.4, "end": 30.9, "confidence": 0.97},
+        {"word": "奢华", "start": 30.9, "end": 31.5, "confidence": 0.96},
+        {"word": "只要", "start": 31.5, "end": 32.0, "confidence": 0.95},
+        {"word": "彼此", "start": 32.0, "end": 32.6, "confidence": 0.97},
+        {"word": "陪伴", "start": 32.6, "end": 33.2, "confidence": 0.96},
+        {"word": "就是", "start": 33.2, "end": 33.6, "confidence": 0.95},
+        {"word": "最大的", "start": 33.6, "end": 34.2, "confidence": 0.97},
+        {"word": "幸福", "start": 34.2, "end": 35.0, "confidence": 0.96}
+      ]
+    },
+    {
+      "id": 6,
+      "start": 35.0,
+      "end": 40.0,
+      "text": "我想，这就是爱情最美好的样子。",
+      "words": [
+        {"word": "我想", "start": 35.0, "end": 35.6, "confidence": 0.96},
+        {"word": "这", "start": 35.6, "end": 35.8, "confidence": 0.95},
+        {"word": "就是", "start": 35.8, "end": 36.2, "confidence": 0.97},
+        {"word": "爱情", "start": 36.2, "end": 36.8, "confidence": 0.96},
+        {"word": "最", "start": 36.8, "end": 37.0, "confidence": 0.95},
+        {"word": "美好", "start": 37.0, "end": 37.6, "confidence": 0.97},
+        {"word": "的", "start": 37.6, "end": 37.8, "confidence": 0.96},
+        {"word": "样子", "start": 37.8, "end": 40.0, "confidence": 0.95}
+      ]
+    },
+    {
+      "id": 7,
+      "start": 40.0,
+      "end": 49.43,
+      "text": "（音乐渐弱，画面淡出）",
+      "words": []
+    }
+  ],
+  "duration": 49.43
+}

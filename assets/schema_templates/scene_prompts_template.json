@@ -1,0 +1,28 @@
+{
+  "_template_description": "步骤6输出 - 场景提示词 + 角色定义。这是管线最关键的中间文件，步骤8和9都消费它。",
+  "_output_path": "output/prompts/scene_prompts.json",
+  "_important": "角色 id 必须与 character_detection.json 中的 label 一致（如 char_0），确保步骤8生成的参考图能被步骤9正确查找。",
+
+  "visual_style_prompt": "电影感，warm_yellow色调，缓慢推拉镜头，流畅转场",
+
+  "characters": [
+    {
+      "id": "char_0（必填，与 character_detection.json 的 label 一致）",
+      "name": "角色名，如：顧杰森",
+      "gender": "男性/女性（必填）",
+      "age": "25-35岁",
+      "appearance": "东亚男性，黑色短发，剑眉星目（必填）",
+      "clothing": "浅粉衬衫（如有换装用→分隔：浅粉衬衫→灰色T恤）"
+    }
+  ],
+
+  "scenes": [
+    {
+      "scene_id": 0,
+      "prompt": "realistic photo style, live action, 16:9 widescreen, 1280x720, 哈佛校门前，阳光明媚，char_0 穿浅粉衬衫站在校门前（必填，必须以 realistic photo style 开头）",
+      "duration": 5,
+      "main_character": "char_0（必填，用于查找步骤8生成的角色参考图）",
+      "extra_refs": []
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "video_path": "/path/to/reference_video.mp4",
+  "technical_specs": {
+    "resolution": "1920x1080",
+    "frame_rate": 29.97,
+    "duration": 120.5,
+    "frame_count": 3609,
+    "width": 1920,
+    "height": 1080,
+    "aspect_ratio": "1.78",
+    "video_format": "MP4"
+  },
+  "visual_style": {
+    "color_distribution": {
+      "dominant_colors": {
+        "red": 180.5,
+        "green": 160.3,
+        "blue": 140.2
+      },
+      "color_features": {
+        "mean_hue": 15.5,
+        "mean_saturation": 120.8,
+        "mean_value": 180.2
+      },
+      "brightness": 173.5,
+      "contrast": 45.8,
+      "color_tone": "warm_yellow"
+    },
+    "motion_characteristics": {
+      "average_motion": 1.2,
+      "motion_stability": 0.8,
+      "motion_type": "normal_movement"
+    }
+  },
+  "metadata": {
+    "analysis_timestamp": "2024-01-15T10:30:00.123456",
+    "analyzer_version": "1.0.0"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "_template_description": "步骤4输出 - 深度视觉分析（基于叙事线 + 关键帧验证）。Claude 查看关键帧后生成此文件。",
+  "_output_path": "output/analysis/coherence_analysis.json",
+
+  "analysis_level": "level_1",
+  "characters": [
+    {
+      "character_id": "char_0（与 character_detection.json 中的 label 一致）",
+      "name_from_text": "从叙事线获取的角色名，如：顧杰森",
+      "visual_description": "东亚男性，25-35岁，黑色短发，剑眉星目",
+      "age_range": "25-35岁",
+      "appearance": {
+        "hair": "黑色短发",
+        "face": "剑眉星目",
+        "distinctive_marks": "无"
+      },
+      "clothing_changes": ["粉色衬衫（场景1-3）", "灰色T恤（场景4-5）"],
+      "scenes_appearance": [0, 1, 2, 3, 4],
+      "confidence": 0.95
+    }
+  ],
+  "scene_analysis": [
+    {
+      "scene_id": 0,
+      "description": "场景描述，如：哈佛校门前，阳光明媚",
+      "characters_present": ["char_0"],
+      "mood": "温暖/紧张/平静"
+    }
+  ]
+}

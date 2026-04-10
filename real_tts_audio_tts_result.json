@@ -1,0 +1,13 @@
+{
+  "output_path": "real_tts_audio.wav",
+  "duration": 20.0,
+  "sample_rate": 44100,
+  "channels": 1,
+  "format": "wav",
+  "voice_params": {
+    "tone": "标准",
+    "speed": "中等",
+    "emotion": "平静"
+  },
+  "narration_text": "这是一段关于日常生活的叙述，讲述了平凡日子中的点点滴滴和生活的美好。内容温暖治愈，适合用中等语速、平静叙述的语调来表达。"
+}

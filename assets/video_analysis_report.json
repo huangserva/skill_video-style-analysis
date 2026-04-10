@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-04-03 08:36:23",
+  "video_analysis": {
+    "video_specs": {
+      "duration": 30,
+      "ratio": "16:9",
+      "style": "电影感",
+      "mood": "温馨",
+      "rhythm": "中等节奏"
+    },
+    "visual_features": {
+      "color_tone": "温暖色调",
+      "composition": "电影感构图",
+      "camera_movement": "缓慢推拉镜头",
+      "editing_style": "流畅转场"
+    },
+    "narrative_features": {
+      "theme": "日常生活记录",
+      "tone": "轻松愉快",
+      "pacing": "匀速推进"
+    }
+  },
+  "generated_prompts": {
+    "style_prompt": "视频风格特征：\n- 视觉风格：电影感\n- 色调：温暖色调\n- 构图：电影感构图\n- 镜头运动：缓慢推拉镜头\n- 剪辑风格：流畅转场\n- 情感基调：温馨\n- 叙事节奏：中等节奏",
+    "content_prompt": "内容创作指南：\n- 主题方向：日常生活记录\n- 表达基调：轻松愉快\n- 节奏控制：匀速推进\n- 时长建议：30秒\n- 画幅比例：16:9",
+    "combined_prompt": "视频风格特征：\n- 视觉风格：电影感\n- 色调：温暖色调\n- 构图：电影感构图\n- 镜头运动：缓慢推拉镜头\n- 剪辑风格：流畅转场\n- 情感基调：温馨\n- 叙事节奏：中等节奏\n\n内容创作指南：\n- 主题方向：日常生活记录\n- 表达基调：轻松愉快\n- 节奏控制：匀速推进\n- 时长建议：30秒\n- 画幅比例：16:9"
+  },
+  "recommendations": {
+    "target_duration": 30,
+    "target_ratio": "16:9",
+    "key_style_elements": [
+      "温暖色调",
+      "电影感构图",
+      "缓慢推拉镜头"
+    ]
+  }
+}

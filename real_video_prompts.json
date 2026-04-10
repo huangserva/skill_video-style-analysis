@@ -1,0 +1,10 @@
+{
+  "visual_style_prompt": "高清720p视频，16:9宽屏，30fps标准帧率，标准构图，稳定镜头，流畅剪辑，电影感风格",
+  "audio_style_prompt": "中等语速，标准语调，平静叙述，清晰音频",
+  "narrative_style_prompt": "叙事类视频，讲述风格，匀速节奏，流畅表达",
+  "technical_specs": {
+    "resolution": "1280x720",
+    "duration": 49.43,
+    "frame_rate": 30
+  }
+}

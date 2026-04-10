@@ -1,0 +1,70 @@
+{
+  "tts_replication_guide": {
+    "voice_parameters": {
+      "gender": "女性/男性",
+      "age_range": "青年/中年/老年",
+      "tone": "温柔亲切/严肃专业/活泼生动/温暖鼓励/冷静客观",
+      "speed": "慢速/较慢/中等语速/较快/快速",
+      "emotion": "喜悦/悲伤/严肃/轻松/温暖/鼓励/紧张/舒缓",
+      "rhythm": "平稳节奏/变化节奏/停顿明显/流畅连贯"
+    },
+    "audio_specifications": {
+      "sample_rate": 44100,
+      "channels": 1,
+      "format": "wav",
+      "bit_rate": 192000,
+      "volume_normalization": true,
+      "noise_reduction": true
+    },
+    "narration_style": {
+      "speaking_style": "新闻播报/旁白叙述/对话互动/教学讲解/情感表达",
+      "articulation": "清晰标准/自然口语/专业术语",
+      "emphasis_pattern": "关键词强调/节奏停顿/情感重音",
+      "sentence_structure": "短句为主/长句为主/长短结合"
+    },
+    "timing_synchronization": {
+      "target_duration": 30.0,
+      "speech_rate_adjustment": true,
+      "pause_intervals": [
+        {
+          "position": "sentence_end",
+          "duration": 0.3
+        },
+        {
+          "position": "paragraph_end",
+          "duration": 0.5
+        }
+      ]
+    },
+    "audio_background": {
+      "background_music": {
+        "has_music": false,
+        "music_style": "轻音乐/古典音乐/流行音乐/环境音乐",
+        "music_volume": 0.3,
+        "voice_ducking": 0.2
+      },
+      "sound_effects": {
+        "has_effects": false,
+        "effect_types": [],
+        "effect_volume": 0.5
+      }
+    },
+    "quality_control": {
+      "audio_clarity_check": true,
+      "volume_consistency": true,
+      "background_noise_check": true,
+      "synchronization_accuracy": "0.1s"
+    },
+    "example_usage": {
+      "reference_text": "大家好，今天我要分享一些生活中的美好瞬间。",
+      "tts_parameters": {
+        "gender": "女性",
+        "tone": "温柔亲切",
+        "speed": "中等语速",
+        "emotion": "温暖鼓励",
+        "rhythm": "平稳节奏"
+      },
+      "narration_style_guide": "温柔亲切的语调，体现温暖鼓励的情感，语速适中，节奏平稳"
+    }
+  }
+}

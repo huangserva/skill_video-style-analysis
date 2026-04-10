@@ -1,0 +1,16 @@
+{
+  "_template_description": "步骤7输出 - TTS复刻指导。Claude 基于 ASR 结果生成此文件，reference_text 必须从 asr_result.json 的 full_text 提取。",
+  "_output_path": "output/prompts/tts_guide.json",
+  "_important": "reference_text 必须是完整的解说文本，不能为空，不能是描述性文字。",
+
+  "tts_parameters": {
+    "gender": "女性/男性",
+    "tone": "温柔/严肃/活泼/温暖/冷静（必填，映射到 tts_generator.py 的 --tone 参数）",
+    "speed": "慢速/中等/较快/快速（必填，映射到 --speed 参数）",
+    "emotion": "温暖/喜悦/悲伤/严肃/轻松/鼓励/紧张/舒缓（必填，映射到 --emotion 参数）",
+    "rhythm": "平稳节奏/变化节奏",
+    "voice": "可选，直接指定 edge_tts voice 名称，如 zh-CN-XiaoxiaoNeural"
+  },
+  "reference_text": "从 asr_result.json 的 full_text 复制的完整解说文本（必填）",
+  "duration_target": 45.2
+}

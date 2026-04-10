@@ -1,0 +1,120 @@
+{
+  "timestamp": "2026-04-03 09:23:58",
+  "video_analysis": {
+    "video_specs": {
+      "duration": 30,
+      "ratio": "16:9",
+      "style": "电影感",
+      "mood": "温馨",
+      "rhythm": "中等节奏"
+    },
+    "visual_features": {
+      "color_tone": "温暖色调",
+      "composition": "电影感构图",
+      "camera_movement": "缓慢推拉镜头",
+      "editing_style": "流畅转场"
+    },
+    "narrative_features": {
+      "theme": "日常生活记录",
+      "tone": "轻松愉快",
+      "pacing": "匀速推进"
+    }
+  },
+  "audio_analysis": {
+    "narration": {
+      "has_narration": true,
+      "narration_text": "大家好，今天我要分享一些生活中的美好瞬间，从校园的阳光到职场的奋斗，再到温馨的日常，每一步都是成长的印记。",
+      "voice_style": {
+        "gender": "女性",
+        "tone": "温柔亲切",
+        "speed": "中等语速",
+        "emotion": "温暖鼓励",
+        "rhythm": "平稳节奏"
+      }
+    },
+    "background_music": {
+      "has_music": true,
+      "music_style": "轻音乐",
+      "music_instruments": "钢琴+弦乐",
+      "music_mood": "温馨治愈",
+      "music_volume": "适中",
+      "music_rhythm": "舒缓"
+    },
+    "sound_effects": {
+      "has_effects": true,
+      "effect_types": [
+        "环境音",
+        "转场音",
+        "强调音"
+      ],
+      "effect_intensity": "自然",
+      "effect_timing": "关键节点"
+    }
+  },
+  "audio_visual_correlation": {
+    "synchronization": {
+      "narration_timing": "精确同步",
+      "music_scene_match": "高度匹配",
+      "effect_scene_correlation": "强关联"
+    },
+    "emotional_coordination": {
+      "visual_audio_emotion_match": "情感一致",
+      "tone_consistency": "风格统一",
+      "mood_harmony": "氛围协调"
+    },
+    "narrative_coordination": {
+      "content_relevance": "高度相关",
+      "pacing_consistency": "节奏一致",
+      "structure_alignment": "结构对应"
+    }
+  },
+  "generated_prompts": {
+    "visual_prompt": "视觉风格特征：\n- 视觉风格：电影感\n- 色调：温暖色调\n- 构图：电影感构图\n- 镜头运动：缓慢推拉镜头\n- 剪辑风格：流畅转场\n- 情感基调：温馨\n- 叙事节奏：中等节奏",
+    "audio_prompt": "音频内容特征：\n- 解说风格：女性声音，温柔亲切，中等语速，温暖鼓励\n- 背景音乐：轻音乐，钢琴+弦乐，温馨治愈，舒缓\n- 音效特点：环境音, 转场音, 强调音，自然，关键节点",
+    "correlation_prompt": "音画协调要求：\n- 时间同步：精确同步，解说与画面内容精确对应\n- 情感匹配：情感一致，视听情感表达保持一致\n- 风格统一：风格统一，整体风格协调统一\n- 节奏一致：节奏一致，叙事节奏与音乐节奏协调",
+    "combined_prompt": "视觉风格特征：\n- 视觉风格：电影感\n- 色调：温暖色调\n- 构图：电影感构图\n- 镜头运动：缓慢推拉镜头\n- 剪辑风格：流畅转场\n- 情感基调：温馨\n- 叙事节奏：中等节奏\n\n音频内容特征：\n- 解说风格：女性声音，温柔亲切，中等语速，温暖鼓励\n- 背景音乐：轻音乐，钢琴+弦乐，温馨治愈，舒缓\n- 音效特点：环境音, 转场音, 强调音，自然，关键节点\n\n音画协调要求：\n- 时间同步：精确同步，解说与画面内容精确对应\n- 情感匹配：情感一致，视听情感表达保持一致\n- 风格统一：风格统一，整体风格协调统一\n- 节奏一致：节奏一致，叙事节奏与音乐节奏协调"
+  },
+  "tts_replication_guide": {
+    "tts_parameters": {
+      "gender": "女性",
+      "tone": "温柔亲切",
+      "speed": "中等语速",
+      "emotion": "温暖鼓励",
+      "rhythm": "平稳节奏"
+    },
+    "reference_text": "大家好，今天我要分享一些生活中的美好瞬间，从校园的阳光到职场的奋斗，再到温馨的日常，每一步都是成长的印记。",
+    "narration_style_guide": "TTS解说风格指导：\n- 配音性别：女性\n- 语调风格：温柔亲切，体现温暖鼓励的情感\n- 语速控制：中等语速，保持平稳节奏\n- 情感表达：温暖鼓励，与画面情感保持一致",
+    "new_narration_suggestions": "基于原解说风格，为新内容创作类似风格的解说文本"
+  },
+  "replication_recommendations": {
+    "visual_replication": {
+      "target_duration": 30,
+      "target_ratio": "16:9",
+      "key_visual_elements": [
+        "温暖色调",
+        "电影感构图",
+        "缓慢推拉镜头"
+      ]
+    },
+    "audio_replication": {
+      "narration_style": {
+        "gender": "女性",
+        "tone": "温柔亲切",
+        "speed": "中等语速",
+        "emotion": "温暖鼓励",
+        "rhythm": "平稳节奏"
+      },
+      "music_style": "轻音乐",
+      "effect_types": [
+        "环境音",
+        "转场音",
+        "强调音"
+      ]
+    },
+    "coordination_principles": {
+      "synchronization": "精确同步",
+      "emotion_match": "情感一致",
+      "rhythm_consistency": "节奏一致"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+# video-style-analysis v2 API 配置
+# API 密钥请放在 api_keys.yaml（已 gitignore）或通过环境变量设置
+
+providers:
+  volcengine:
+    api_base: "https://ark.cn-beijing.volces.com/api/v3"
+
+models:
+  image:
+    provider: volcengine
+    model: "doubao-seedream-4-0-250828"
+    size: "2K"
+    response_format: "url"
+    watermark: false
+    timeout: 120
+
+  video:
+    provider: volcengine
+    model: "doubao-seedance-2-0-fast-260128"
+    ratio: "16:9"
+    resolution: "720p"
+    generate_audio: true
+    watermark: false
+    min_duration: 4
+    max_duration: 15
+    poll_interval: 5
+    poll_max_attempts: 120
+    submit_timeout: 30
+    poll_timeout: 15
+    max_reference_images: 9
+
+  tts:
+    provider: edge_tts
+    # edge_tts 免费无需 API key
+    # 可选 voice 列表见: https://learn.microsoft.com/zh-cn/azure/ai-services/speech-service/language-support
+    voice: "zh-CN-XiaoxiaoNeural"
+    # 自定义 TTS 服务（可选）
+    # custom_api_url: ""
+    # custom_api_key: ""

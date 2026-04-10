@@ -1,0 +1,19 @@
+{
+  "_template_description": "步骤5输出 - 音画关联分析。Claude 基于 ASR + 视觉分析结果生成此文件。",
+  "_output_path": "output/analysis/audio_visual_correlation.json",
+
+  "analysis_level": "level_1",
+  "timeline_mapping": [
+    {
+      "time_range": "0-5s",
+      "asr_text": "对应时间段的 ASR 文本",
+      "visual_content": "对应时间段的画面描述",
+      "semantic_match": "high/medium/low",
+      "emotion_match": "high/medium/low"
+    }
+  ],
+  "semantic_match_score": 0.85,
+  "emotion_consistency": 0.9,
+  "overall_correlation": "音画高度一致 / 音画部分偏离 / 音画关联较弱",
+  "notes": "补充说明，如：旁白与画面有3秒延迟"
+}
