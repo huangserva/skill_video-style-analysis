@@ -38,6 +38,20 @@
 
 ### 安装依赖
 
+#### 系统依赖
+
+```bash
+# macOS
+brew install ffmpeg
+
+# Ubuntu / Debian
+sudo apt-get install ffmpeg
+
+# Windows — 从 https://ffmpeg.org/download.html 下载并加入 PATH
+```
+
+#### Python 依赖
+
 ```bash
 pip install opencv-python numpy moviepy Pillow openai-whisper edge-tts aiohttp pyyaml insightface onnxruntime
 ```

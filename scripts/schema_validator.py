@@ -173,6 +173,27 @@ def validate_scene_prompts(path: str) -> Tuple[bool, List[str], List[str]]:
                 f"[scenes[{i}]] 提示词未包含 'realistic photo style' 前缀（SKILL.md 强制要求）"
             )
 
+    # 跨引用检查：scenes[].main_character 必须存在于 characters[].id
+    char_ids = set()
+    for c in data.get("characters", []):
+        cid = c.get("id")
+        if cid:
+            char_ids.add(cid)
+    for c in data.get("character_ref_prompts", []):
+        cid = c.get("character_id")
+        if cid:
+            char_ids.add(cid)
+
+    if char_ids:
+        for i, scene in enumerate(data.get("scenes", [])):
+            mc = scene.get("main_character")
+            if mc and mc not in char_ids:
+                errors.append(
+                    f"[scenes[{i}]] main_character='{mc}' 在 characters 列表中找不到对应 id，"
+                    f"可用的 id 为：{sorted(char_ids)}"
+                )
+                is_valid = False
+
     return is_valid, errors, warnings
 
 

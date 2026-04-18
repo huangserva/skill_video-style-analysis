@@ -1,10 +1,23 @@
-# API 密钥配置（示例）
-# 复制为 api_keys.yaml 填入真实密钥
+# VolcEngine（火山引擎）API 密钥配置
+#
+# 申请步骤：
+#   1. 注册火山引擎账号：https://www.volcengine.com/
+#   2. 进入「豆包大模型」控制台：https://console.volcengine.com/ark/region:ark+cn-beijing/openManagement
+#   3. 开通以下模型的调用权限：
+#      - doubao-seedream-4-0-250828  （步骤8：角色参考图生成）
+#      - doubao-seedance-2-0-fast-260128  （步骤9：场景视频生成）
+#   4. 在「API Key 管理」中创建 API Key
+#   5. 将 API Key 填入下方（格式：一长串字母数字，无需 "Bearer" 前缀）
+#
+# 费用参考（仅供参考，以官网为准）：
+#   - Seedream 图片生成：约 0.06 元/张
+#   - Seedance 视频生成：约 0.5-2 元/秒（720p）
+#   - edge_tts（TTS）：完全免费
+#
+# 安全提示：
+#   此文件已加入 .gitignore，请勿将实际密钥提交到 Git 仓库
 
 volcengine:
   api_key: "your-volcengine-api-key-here"
-  # api_base: ""  # 可选，覆盖 api_config.yaml 中的 api_base
-
-# 如果使用其他 provider，在这里添加
-# apimart:
-#   api_key: "your-apimart-api-key"
+  # api_base 无需修改，默认值在 api_config.yaml 中已配置
+  # api_base: "https://ark.cn-beijing.volces.com/api/v3"

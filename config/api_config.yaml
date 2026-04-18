@@ -19,7 +19,7 @@ models:
     model: "doubao-seedance-2-0-fast-260128"
     ratio: "16:9"
     resolution: "720p"
-    generate_audio: true
+    generate_audio: false  # 步骤10用edge_tts生成配音，步骤11b替换音轨；若跳过TTS可改为true
     watermark: false
     min_duration: 4
     max_duration: 15

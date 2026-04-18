@@ -9,6 +9,7 @@
 import os
 import sys
 import json
+import shutil
 import argparse
 import subprocess
 from pathlib import Path
@@ -17,16 +18,18 @@ from pathlib import Path
 class WorkflowCoordinator:
     """工作流协调器 - 执行步骤1-3的自动化脚本（含步骤1.5角色检测）"""
 
-    def __init__(self, reference_video_path, output_dir="output"):
+    def __init__(self, reference_video_path, output_dir="output", dry_run=False):
         """
         初始化协调器
 
         参数:
             reference_video_path: 原视频路径
             output_dir: 输出目录
+            dry_run: 演练模式，跳过真实执行，生成占位文件
         """
         self.reference_video_path = reference_video_path
         self.output_dir = Path(output_dir)
+        self.dry_run = dry_run
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # 输出路径
@@ -38,12 +41,75 @@ class WorkflowCoordinator:
         self.asr_result_path = self.analysis_dir / "asr_result.json"
         self.character_detection_path = self.analysis_dir / "character_detection.json"
 
+    def preflight_check(self):
+        """环境预检：在开始任何步骤前验证依赖完整性"""
+        print("[预检] 检查环境依赖...")
+        errors = []
+
+        # 检查 ffmpeg
+        if shutil.which("ffmpeg") is None:
+            errors.append(
+                "ffmpeg 未找到。请安装：\n"
+                "    macOS: brew install ffmpeg\n"
+                "    Ubuntu: sudo apt-get install ffmpeg\n"
+                "    Windows: https://ffmpeg.org/download.html"
+            )
+
+        # 检查必需 Python 包
+        required = {"cv2": "opencv-python", "numpy": "numpy", "yaml": "pyyaml"}
+        for mod, pkg in required.items():
+            try:
+                __import__(mod)
+            except ImportError:
+                errors.append(f"缺少必需 Python 包: {pkg}（pip install {pkg}）")
+
+        # 检查可选 Python 包
+        optional = {
+            "insightface": "步骤1.5（角色检测）将跳过",
+            "whisper": "步骤3（ASR）将尝试 sub-agent",
+            "edge_tts": "步骤10（TTS）将降级为正弦波",
+        }
+        for mod, fallback in optional.items():
+            try:
+                __import__(mod)
+            except ImportError:
+                print(f"  ⚠️  可选包 '{mod}' 未安装 — {fallback}")
+
+        if errors:
+            print("\n[预检失败] 以下依赖缺失：")
+            for e in errors:
+                print(f"  ❌ {e}")
+            sys.exit(1)
+
+        print("  ✓ 环境预检通过")
+
+    def _dry_run_result(self, step_name, output_path=None, placeholder_data=None):
+        """dry-run 模式返回占位结果"""
+        print(f"  [DRY-RUN] 跳过 {step_name}，生成占位数据")
+        data = placeholder_data or {}
+        if output_path:
+            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        return {"success": True, "data": data, "dry_run": True}
+
     def step1_extract_keyframes(self):
         """
         步骤1: 智能关键帧提取
         """
         print("\n[步骤1] 智能关键帧提取...")
         print("=" * 70)
+
+        if self.dry_run:
+            self.keyframes_dir.mkdir(parents=True, exist_ok=True)
+            # 生成占位帧文件
+            (self.keyframes_dir / "frame_0000.jpg").touch()
+            placeholder = {
+                "video_info": {"path": self.reference_video_path, "duration": 30.0, "fps": 30, "resolution": "1280x720"},
+                "scenes": [{"scene_id": 0, "start_time": 0.0, "end_time": 30.0}],
+                "keyframes": [{"frame_index": 0, "timestamp": 0.0, "frame_path": str(self.keyframes_dir / "frame_0000.jpg"), "frame_type": "uniform", "scene_id": 0}]
+            }
+            return self._dry_run_result("关键帧提取", str(self.keyframes_dir / "extraction_result.json"), placeholder)
 
         cmd = [
             "python", "scripts/smart_keyframe_extractor.py",
@@ -87,6 +153,13 @@ class WorkflowCoordinator:
         """
         print("\n[步骤1.5] 角色检测与跨帧聚类...")
         print("=" * 70)
+
+        if self.dry_run:
+            placeholder = {"unique_characters": 2, "total_faces_detected": 5, "characters": [
+                {"character_id": 0, "label": "char_0", "appearance_count": 3},
+                {"character_id": 1, "label": "char_1", "appearance_count": 2}
+            ]}
+            return self._dry_run_result("角色检测", str(self.character_detection_path), placeholder)
 
         cmd = [
             "python", "scripts/character_detector.py",
@@ -134,6 +207,10 @@ class WorkflowCoordinator:
         print("\n[步骤2] 色彩与运动分析...")
         print("=" * 70)
 
+        if self.dry_run:
+            placeholder = {"visual_style": {"color_distribution": {"color_tone": "warm_yellow"}, "motion_characteristics": {"motion_type": "slow_movement"}}}
+            return self._dry_run_result("色彩分析", str(self.color_analysis_path), placeholder)
+
         cmd = [
             "python", "scripts/video_analyzer.py",
             "--video_path", self.reference_video_path,
@@ -176,6 +253,10 @@ class WorkflowCoordinator:
         """
         print("\n[步骤3] ASR语音识别与风格分析...")
         print("=" * 70)
+
+        if self.dry_run:
+            placeholder = {"full_text": "（dry-run 占位文本）", "duration": 30.0, "segments": [], "voice_style": {"speed": {"level": "中等"}}}
+            return self._dry_run_result("ASR语音识别", str(self.asr_result_path), placeholder)
 
         cmd = [
             "python", "scripts/asr_transcriber.py",
@@ -230,6 +311,9 @@ class WorkflowCoordinator:
         print("=" * 70)
         print("阶段1：深度视频与音频分析")
         print("=" * 70)
+
+        # 环境预检
+        self.preflight_check()
 
         # 执行步骤（步骤1.5依赖步骤1的关键帧，其余可并行）
         result_step1 = self.step1_extract_keyframes()
@@ -301,18 +385,21 @@ def main():
                         choices=['tiny', 'base', 'small', 'medium', 'large'],
                         help='Whisper模型大小')
     parser.add_argument('--language', type=str, default='zh', help='语音识别语言')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='演练模式：跳过真实执行，生成占位文件，验证管线通路')
 
     args = parser.parse_args()
 
-    # 验证输入文件
-    if not os.path.exists(args.reference_video):
+    # dry-run 模式跳过文件存在检查
+    if not args.dry_run and not os.path.exists(args.reference_video):
         print(f"❌ 错误：原视频文件不存在: {args.reference_video}")
         return 1
 
     # 创建协调器
     coordinator = WorkflowCoordinator(
         reference_video_path=args.reference_video,
-        output_dir=args.output_dir
+        output_dir=args.output_dir,
+        dry_run=args.dry_run
     )
 
     # 执行阶段1

@@ -3,16 +3,47 @@
 """
 音视频精确对齐合成模块
 基于ASR时间戳将TTS音频与视频精确对齐
-支持音频拉伸/压缩匹配视频时长
+支持 librosa 保音调变速（优先）或 moviepy speedx（兜底）
 """
 
 import os
 import json
 import argparse
 import sys
+import tempfile
+import numpy as np
 
 
-def align_audio_to_video_with_timestamps(video_path, tts_audio_path, output_path, asr_json_path=None, tts_result_json_path=None):
+def _stretch_audio_preserve_pitch(input_path, output_path, target_duration):
+    """使用 librosa 做保持音调的变速"""
+    try:
+        import librosa
+        import soundfile as sf
+
+        y, sr = librosa.load(input_path, sr=None)
+        original_duration = len(y) / sr
+        rate = original_duration / target_duration  # rate > 1 加速，< 1 减速
+        rate = max(0.5, min(2.0, rate))  # 限制在合理范围
+
+        y_stretched = librosa.effects.time_stretch(y, rate=rate)
+
+        # 精确匹配目标时长
+        target_samples = int(target_duration * sr)
+        if len(y_stretched) > target_samples:
+            y_stretched = y_stretched[:target_samples]
+        elif len(y_stretched) < target_samples:
+            y_stretched = np.pad(y_stretched, (0, target_samples - len(y_stretched)))
+
+        sf.write(output_path, y_stretched, sr)
+        return True
+    except ImportError:
+        return False
+    except Exception as e:
+        print(f"  ⚠️  librosa 变速失败: {e}")
+        return False
+
+
+def align_audio_to_video_with_timestamps(video_path, tts_audio_path, output_path, asr_json_path=None, tts_result_json_path=None, force=False):
     """
     基于时间戳将TTS音频与视频精确对齐
 
@@ -93,43 +124,49 @@ def align_audio_to_video_with_timestamps(video_path, tts_audio_path, output_path
     if video_clip.duration > 0:
         video_audio_ratio = abs(duration_diff) / video_clip.duration
         if video_audio_ratio > 0.5:
-            print(f"  [警告] 音视频时长差异超过50%（{video_audio_ratio:.0%}），合成质量可能受影响")
+            if not force:
+                print(
+                    f"\n  [错误] 音视频时长差异过大（{video_audio_ratio:.0%}），"
+                    f"强行变速会导致严重失真。\n"
+                    f"  建议：\n"
+                    f"    1. 检查 TTS 的 reference_text 是否与视频内容匹配\n"
+                    f"    2. 调整 scene_prompts.json 中的 duration 字段\n"
+                    f"  如需强制执行，请添加 --force 参数"
+                )
+                video_clip.close()
+                tts_audio.close()
+                sys.exit(1)
+            else:
+                print(f"  [警告] 音视频时长差异超过50%（{video_audio_ratio:.0%}），--force 模式继续执行")
 
     # 调整音频时长以匹配视频
     final_audio = tts_audio
     if abs(duration_diff) > 0.1:  # 差异超过0.1秒时调整
         print(f"\n[第四步] 调整音频时长...")
 
-        if duration_diff > 0:
-            # 音频比视频长，需要压缩
-            print(f"  音频比视频长 {duration_diff:.2f} 秒，需要压缩")
-            compression_ratio = video_clip.duration / tts_audio.duration
-            print(f"  压缩比例: {compression_ratio:.3f}")
+        # 优先使用 librosa 保音调变速
+        tmp_stretched = tempfile.mktemp(suffix=".wav")
+        librosa_ok = _stretch_audio_preserve_pitch(
+            tts_audio_path, tmp_stretched, video_clip.duration
+        )
 
-            try:
-                # 使用MoviePy的speedx函数压缩音频
-                final_audio = tts_audio.speedx(factor=compression_ratio)
-                print(f"  ✓ 音频压缩完成")
-            except Exception as e:
-                print(f"  ⚠️  音频压缩失败，将使用截断方式: {str(e)}")
-                final_audio = tts_audio.subclip(0, video_clip.duration)
-
+        if librosa_ok:
+            print(f"  ✓ librosa 保音调变速完成")
+            tts_audio.close()
+            final_audio = AudioFileClip(tmp_stretched)
         else:
-            # 音频比视频短，需要拉伸
-            print(f"  音频比视频短 {-duration_diff:.2f} 秒，需要拉伸")
-            stretch_ratio = video_clip.duration / tts_audio.duration
-            print(f"  拉伸比例: {stretch_ratio:.3f}")
-
+            # 兜底：moviepy speedx（会改变音调）
+            print(f"  ⚠️  librosa 不可用，降级为 moviepy speedx（音调可能变化）")
+            ratio = video_clip.duration / tts_audio.duration
             try:
-                # 使用MoviePy的speedx函数拉伸音频
-                final_audio = tts_audio.speedx(factor=stretch_ratio)
-                print(f"  ✓ 音频拉伸完成")
+                final_audio = tts_audio.speedx(factor=ratio)
+                print(f"  ✓ moviepy speedx 完成 (ratio={ratio:.3f})")
             except Exception as e:
-                print(f"  ⚠️  音频拉伸失败，将使用循环方式: {str(e)}")
-                loop_count = int(video_clip.duration / tts_audio.duration) + 1
-                audio_segments = [tts_audio] * loop_count
-                final_audio = CompositeAudioClip(audio_segments).subclip(0, video_clip.duration)
-                print(f"  音频已循环 {loop_count} 次")
+                print(f"  ⚠️  speedx 也失败，截断处理: {e}")
+                if duration_diff > 0:
+                    final_audio = tts_audio.subclip(0, video_clip.duration)
+                else:
+                    final_audio = tts_audio
 
     # 替换原视频的音频
     print(f"\n[第五步] 合成音轨...")
@@ -218,6 +255,7 @@ def main():
     parser.add_argument('--output_path', type=str, required=True, help='输出视频路径')
     parser.add_argument('--asr_json', type=str, default=None, help='ASR识别结果JSON路径（可选）')
     parser.add_argument('--tts_result_json', type=str, default=None, help='TTS生成结果JSON路径（可选）')
+    parser.add_argument('--force', action='store_true', help='强制执行（即使时长差异超过50%%）')
 
     args = parser.parse_args()
 
@@ -227,7 +265,8 @@ def main():
             tts_audio_path=args.audio_path,
             output_path=args.output_path,
             asr_json_path=args.asr_json,
-            tts_result_json_path=args.tts_result_json
+            tts_result_json_path=args.tts_result_json,
+            force=args.force
         )
 
         # 保存结果报告
