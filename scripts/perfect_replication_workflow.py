@@ -30,6 +30,7 @@ class WorkflowCoordinator:
         self.reference_video_path = reference_video_path
         self.output_dir = Path(output_dir)
         self.dry_run = dry_run
+        self.python_executable = sys.executable or "python3"
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # 输出路径
@@ -112,7 +113,7 @@ class WorkflowCoordinator:
             return self._dry_run_result("关键帧提取", str(self.keyframes_dir / "extraction_result.json"), placeholder)
 
         cmd = [
-            "python", "scripts/smart_keyframe_extractor.py",
+            self.python_executable, "scripts/smart_keyframe_extractor.py",
             "--video_path", self.reference_video_path,
             "--output_dir", str(self.keyframes_dir),
             "--min_fps", "2.0"
@@ -162,7 +163,7 @@ class WorkflowCoordinator:
             return self._dry_run_result("角色检测", str(self.character_detection_path), placeholder)
 
         cmd = [
-            "python", "scripts/character_detector.py",
+            self.python_executable, "scripts/character_detector.py",
             "--keyframes_dir", str(self.keyframes_dir),
             "--output_path", str(self.character_detection_path),
         ]
@@ -212,7 +213,7 @@ class WorkflowCoordinator:
             return self._dry_run_result("色彩分析", str(self.color_analysis_path), placeholder)
 
         cmd = [
-            "python", "scripts/video_analyzer.py",
+            self.python_executable, "scripts/video_analyzer.py",
             "--video_path", self.reference_video_path,
             "--output_path", str(self.color_analysis_path)
         ]
@@ -259,7 +260,7 @@ class WorkflowCoordinator:
             return self._dry_run_result("ASR语音识别", str(self.asr_result_path), placeholder)
 
         cmd = [
-            "python", "scripts/asr_transcriber.py",
+            self.python_executable, "scripts/asr_transcriber.py",
             "--video_path", self.reference_video_path,
             "--output_path", str(self.asr_result_path),
             "--model_size", model_size,
@@ -350,11 +351,25 @@ class WorkflowCoordinator:
         print("\n" + "=" * 70)
         if success:
             print("✓ 阶段1完成！")
+
+            # 自动生成步骤3.5-7的JSON初稿
+            print("\n[初稿生成] 自动生成步骤3.5-7的JSON初稿...")
+            draft_cmd = [
+                self.python_executable, "scripts/draft_generator.py",
+                "--input_dir", str(self.output_dir),
+                "--output_dir", str(self.output_dir),
+            ]
+            try:
+                draft_result = subprocess.run(draft_cmd, capture_output=True, text=True, timeout=30)
+                if draft_result.returncode == 0:
+                    print("  ✓ 初稿生成完成")
+                else:
+                    print(f"  ⚠️  初稿生成失败: {draft_result.stderr[-300:]}")
+            except Exception as e:
+                print(f"  ⚠️  初稿生成异常: {e}")
+
             print("\n后续步骤由 Claude 根据 SKILL.md 调度：")
-            print("  步骤3.5: 分析 ASR 文本 → narrative_analysis.json")
-            print("  步骤4:   查看关键帧 + 叙事线 → coherence_analysis.json")
-            print("  步骤5:   音画关联分析 → audio_visual_correlation.json")
-            print("  步骤6-7: 生成提示词 → scene_prompts.json + tts_guide.json")
+            print("  步骤3.5-7: 审核并补充初稿中的 [TODO] 字段")
             print("  步骤8:   python scripts/image_generator.py ...")
             print("  步骤9:   python scripts/video_generator.py ...")
             print("  步骤10:  python scripts/tts_generator.py ...")

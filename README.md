@@ -20,12 +20,13 @@
   ├─ [步骤1.5] 角色检测与跨帧聚类 (InsightFace)
   ├─ [步骤2]   色彩与运动分析
   ├─ [步骤3]   ASR 语音识别 (Whisper)
+  ├─ [自动]    生成步骤3.5-7 JSON 初稿
   │
-  ├─ [步骤3.5] 叙事线分析 (Claude)
-  ├─ [步骤4]   深度视觉分析 (Claude)
-  ├─ [步骤5]   音画关联分析 (Claude)
-  ├─ [步骤6]   视觉风格提示词生成 (Claude)
-  ├─ [步骤7]   TTS 复刻指导生成 (Claude)
+  ├─ [步骤3.5] 审核 narrative_analysis.json 初稿 (Claude)
+  ├─ [步骤4]   审核 coherence_analysis.json 初稿 (Claude)
+  ├─ [步骤5]   审核 audio_visual_correlation.json 初稿 (Claude)
+  ├─ [步骤6]   审核 scene_prompts.json 初稿 (Claude)
+  ├─ [步骤7]   审核 tts_guide.json 初稿 (Claude)
   │
   ├─ [步骤8]   角色参考图生成 (Seedream API)
   ├─ [步骤9]   场景视频生成 (Seedance API)
@@ -72,6 +73,7 @@ python scripts/perfect_replication_workflow.py \
 ```
 
 后续步骤 3.5-11 由 Claude 根据 `SKILL.md` 调度执行。
+阶段 1 结束后会自动生成 `output/analysis/` 和 `output/prompts/` 下的 5 个 JSON 初稿，Claude 主要负责补齐语义字段并修正 `[TODO]` 占位符。
 
 ## 项目结构
 
@@ -81,6 +83,7 @@ scripts/
   character_detector.py        # 步骤1.5: 角色检测 (InsightFace)
   video_analyzer.py            # 步骤2: 色彩与运动分析
   asr_transcriber.py           # 步骤3: ASR 语音识别
+  draft_generator.py           # 自动生成步骤3.5-7 JSON 初稿
   image_generator.py           # 步骤8: 角色参考图 (Seedream)
   video_generator.py           # 步骤9: 场景视频 (Seedance)
   tts_generator.py             # 步骤10: TTS 配音
