@@ -9,6 +9,7 @@
 - 色彩/运动风格分析（RGB/HSV + Farneback 光流法）
 - ASR 语音识别与叙事线分析（Whisper + 三级容错）
 - AI 内容生成（Seedream 角色参考图 + Seedance 场景视频）
+- 项目级统一风格约束（`style_consistency`）前置分析，并强制贯穿角色图与场景视频生成
 - TTS 配音克隆（edge_tts，带时间戳估算）
 - 音视频精确对齐合成
 
@@ -20,9 +21,10 @@
   ├─ [步骤1.5] 角色检测与跨帧聚类 (InsightFace)
   ├─ [步骤2]   色彩与运动分析
   ├─ [步骤3]   ASR 语音识别 (Whisper)
-  ├─ [自动]    生成步骤3.5-7 JSON 初稿
+  ├─ [自动]    生成步骤3.5-7（含3.6）JSON 初稿
   │
   ├─ [步骤3.5] 审核 narrative_analysis.json 初稿 (Claude)
+  ├─ [步骤3.6] 审核 semantic_analysis.json 初稿 (Claude)
   ├─ [步骤4]   审核 coherence_analysis.json 初稿 (Claude)
   ├─ [步骤5]   审核 audio_visual_correlation.json 初稿 (Claude)
   ├─ [步骤6]   审核 scene_prompts.json 初稿 (Claude)
@@ -73,7 +75,7 @@ python scripts/perfect_replication_workflow.py \
 ```
 
 后续步骤 3.5-11 由 Claude 根据 `SKILL.md` 调度执行。
-阶段 1 结束后会自动生成 `output/analysis/` 和 `output/prompts/` 下的 5 个 JSON 初稿，Claude 主要负责补齐语义字段并修正 `[TODO]` 占位符。
+阶段 1 结束后会自动生成 `output/analysis/` 和 `output/prompts/` 下的 6 个 JSON 初稿，Claude 主要负责先完善 `semantic_analysis.json` 的 6 棱镜结构（叙事 / 主体 / 动作 / 场景 / 镜头 / 约束）以及项目级 `style_consistency`，再补齐其余语义字段并修正 `[TODO]` 占位符。
 
 ## 项目结构
 
@@ -83,7 +85,7 @@ scripts/
   character_detector.py        # 步骤1.5: 角色检测 (InsightFace)
   video_analyzer.py            # 步骤2: 色彩与运动分析
   asr_transcriber.py           # 步骤3: ASR 语音识别
-  draft_generator.py           # 自动生成步骤3.5-7 JSON 初稿
+  draft_generator.py           # 自动生成步骤3.5-7（含3.6）JSON 初稿
   image_generator.py           # 步骤8: 角色参考图 (Seedream)
   video_generator.py           # 步骤9: 场景视频 (Seedance)
   tts_generator.py             # 步骤10: TTS 配音
@@ -98,7 +100,7 @@ config/
   api_keys.yaml.example        # API 密钥模板
 
 assets/
-  schema_templates/            # 步骤3.5-7 的 JSON 标准模板
+  schema_templates/            # 步骤3.5-7（含3.6）的 JSON 标准模板
 
 references/                    # 参考文档
 ```
@@ -108,6 +110,8 @@ references/                    # 参考文档
 **ASR 优先原则** — 先从语音识别文本中理解叙事和角色，再用视觉验证，而非从图像猜测。
 
 **三级容错** — ASR 清晰时全流程分析；ASR 模糊时降级到视觉辅助；ASR 失败时用 InsightFace 人脸聚类做纯视觉角色识别。
+
+**风格先锁定** — 风格一致性不是步骤 8 临时补救，而是在步骤 3.6 先沉淀成 `style_consistency`，后续角色图和场景视频都强制继承。
 
 **Schema 校验** — 步骤 6-7 生成的中间 JSON 在步骤 8-9 入口自动校验，缺字段时报明确错误而非静默失败。
 

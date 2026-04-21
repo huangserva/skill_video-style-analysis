@@ -9,26 +9,39 @@
 import os
 import sys
 import json
+import re
 import shutil
 import argparse
 import subprocess
 from pathlib import Path
 
 
+def derive_project_name(reference_video_path: str) -> str:
+    """根据输入视频文件名生成稳定的项目目录名"""
+    stem = Path(reference_video_path).stem or "project"
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", stem).strip("._")
+    return safe_name or "project"
+
+
 class WorkflowCoordinator:
     """工作流协调器 - 执行步骤1-3的自动化脚本（含步骤1.5角色检测）"""
 
-    def __init__(self, reference_video_path, output_dir="output", dry_run=False):
+    def __init__(self, reference_video_path, output_dir="output", dry_run=False, project_name=None):
         """
         初始化协调器
 
         参数:
             reference_video_path: 原视频路径
-            output_dir: 输出目录
+            output_dir: 输出根目录
             dry_run: 演练模式，跳过真实执行，生成占位文件
         """
         self.reference_video_path = reference_video_path
-        self.output_dir = Path(output_dir)
+        self.project_name = project_name or derive_project_name(reference_video_path)
+        self.output_root = Path(output_dir)
+        if self.output_root.name == self.project_name:
+            self.output_dir = self.output_root
+        else:
+            self.output_dir = self.output_root / self.project_name
         self.dry_run = dry_run
         self.python_executable = sys.executable or "python3"
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -156,10 +169,18 @@ class WorkflowCoordinator:
         print("=" * 70)
 
         if self.dry_run:
-            placeholder = {"unique_characters": 2, "total_faces_detected": 5, "characters": [
-                {"character_id": 0, "label": "char_0", "appearance_count": 3},
-                {"character_id": 1, "label": "char_1", "appearance_count": 2}
-            ]}
+            placeholder = {
+                "unique_characters": 2,
+                "total_faces_detected": 5,
+                "visible_people_stats": {
+                    "stable_visible_people_estimate": 2,
+                    "max_visible_people": 2,
+                },
+                "characters": [
+                    {"character_id": 0, "label": "char_0", "appearance_count": 3},
+                    {"character_id": 1, "label": "char_1", "appearance_count": 2},
+                ],
+            }
             return self._dry_run_result("角色检测", str(self.character_detection_path), placeholder)
 
         cmd = [
@@ -185,8 +206,13 @@ class WorkflowCoordinator:
 
                 unique_chars = char_result.get('unique_characters', 0)
                 total_faces = char_result.get('total_faces_detected', 0)
+                stable_visible = (
+                    char_result.get('visible_people_stats', {}) or {}
+                ).get('stable_visible_people_estimate', 0)
                 print(f"  检测到人脸: {total_faces}")
-                print(f"  识别角色数: {unique_chars}")
+                print(f"  跨帧人脸聚类数: {unique_chars}")
+                if stable_visible:
+                    print(f"  稳定可见人数估计: {stable_visible}")
 
                 return {"success": True, "data": char_result}
             else:
@@ -312,6 +338,7 @@ class WorkflowCoordinator:
         print("=" * 70)
         print("阶段1：深度视频与音频分析")
         print("=" * 70)
+        print(f"项目目录: {self.output_dir}")
 
         # 环境预检
         self.preflight_check()
@@ -352,8 +379,8 @@ class WorkflowCoordinator:
         if success:
             print("✓ 阶段1完成！")
 
-            # 自动生成步骤3.5-7的JSON初稿
-            print("\n[初稿生成] 自动生成步骤3.5-7的JSON初稿...")
+            # 自动生成步骤3.5-7（含3.6六棱镜语义骨架）的JSON初稿
+            print("\n[初稿生成] 自动生成步骤3.5-7（含3.6六棱镜语义骨架）的JSON初稿...")
             draft_cmd = [
                 self.python_executable, "scripts/draft_generator.py",
                 "--input_dir", str(self.output_dir),
@@ -369,15 +396,25 @@ class WorkflowCoordinator:
                 print(f"  ⚠️  初稿生成异常: {e}")
 
             print("\n后续步骤由 Claude 根据 SKILL.md 调度：")
-            print("  步骤3.5-7: 审核并补充初稿中的 [TODO] 字段")
+            print("  步骤3.5-7（含3.6）: 审核并补充初稿中的 [TODO] 字段")
             print("  步骤8:   python scripts/image_generator.py ...")
             print("  步骤9:   python scripts/video_generator.py ...")
             print("  步骤10:  python scripts/tts_generator.py ...")
             print("  步骤11:  python scripts/scene_concat.py + audio_video_mixer.py")
 
             if result_step1_5["success"]:
-                chars = result_step1_5.get("data", {}).get("unique_characters", 0)
-                print(f"\n  步骤1.5已识别 {chars} 个视觉角色（可在步骤4中使用）")
+                char_data = result_step1_5.get("data", {})
+                chars = char_data.get("unique_characters", 0)
+                stable_visible = (
+                    char_data.get("visible_people_stats", {}) or {}
+                ).get("stable_visible_people_estimate", 0)
+                if stable_visible:
+                    print(
+                        f"\n  步骤1.5结果：跨帧人脸聚类数 {chars}，"
+                        f"稳定可见人数估计 {stable_visible}"
+                    )
+                else:
+                    print(f"\n  步骤1.5已识别 {chars} 个视觉角色（可在步骤4中使用）")
 
             if not result_step3["success"]:
                 if result_step1_5["success"]:
@@ -395,7 +432,8 @@ def main():
     """主函数"""
     parser = argparse.ArgumentParser(description='阶段1自动化（步骤1-3）')
     parser.add_argument('--reference_video', type=str, required=True, help='原视频路径')
-    parser.add_argument('--output_dir', type=str, default='output', help='输出目录')
+    parser.add_argument('--output_dir', type=str, default='output', help='输出根目录（会自动创建视频同名子目录）')
+    parser.add_argument('--project_name', type=str, default=None, help='可选，自定义项目子目录名')
     parser.add_argument('--whisper_model', type=str, default='base',
                         choices=['tiny', 'base', 'small', 'medium', 'large'],
                         help='Whisper模型大小')
@@ -414,7 +452,8 @@ def main():
     coordinator = WorkflowCoordinator(
         reference_video_path=args.reference_video,
         output_dir=args.output_dir,
-        dry_run=args.dry_run
+        dry_run=args.dry_run,
+        project_name=args.project_name,
     )
 
     # 执行阶段1

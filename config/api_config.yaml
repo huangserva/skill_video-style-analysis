@@ -2,17 +2,20 @@
 # API 密钥请放在 api_keys.yaml（已 gitignore）或通过环境变量设置
 
 providers:
+  apimart:
+    api_base: "https://api.apimart.ai/v1"
   volcengine:
     api_base: "https://ark.cn-beijing.volces.com/api/v3"
 
 models:
   image:
-    provider: volcengine
-    model: "doubao-seedream-4-0-250828"
-    size: "2K"
-    response_format: "url"
-    watermark: false
+    provider: apimart
+    model: "gemini-3.1-flash-image-preview"
+    size: "3:4"
+    n: 1
     timeout: 120
+    poll_interval: 3
+    poll_max_wait: 300
 
   video:
     provider: volcengine

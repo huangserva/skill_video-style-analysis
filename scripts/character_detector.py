@@ -18,7 +18,7 @@ import argparse
 import cv2
 import numpy as np
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -72,6 +72,8 @@ class CharacterDetector:
         self.similarity_threshold = similarity_threshold
         self.det_size = (det_size, det_size)
         self.det_thresh = det_thresh
+        self.extraction_data = self._load_extraction_data()
+        self.scene_ranges = self.extraction_data.get("scenes", []) if self.extraction_data else []
 
         # 输出目录
         self.characters_dir = self.output_path.parent / "characters"
@@ -81,6 +83,22 @@ class CharacterDetector:
         # 初始化 InsightFace
         self.app = None
         self._init_insightface()
+
+    def _load_extraction_data(self) -> dict:
+        """预加载 extraction_result.json，避免重复读取并支持场景推断"""
+        if not self.extraction_result_path:
+            return {}
+
+        path = Path(self.extraction_result_path)
+        if not path.exists():
+            return {}
+
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"  [警告] 无法读取 extraction_result.json: {e}")
+            return {}
 
     def _init_insightface(self):
         """初始化InsightFace模型"""
@@ -107,15 +125,14 @@ class CharacterDetector:
         """
         keyframes = []
 
-        if self.extraction_result_path and Path(self.extraction_result_path).exists():
-            with open(self.extraction_result_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            for i, kf in enumerate(data.get("keyframes", [])):
+        if self.extraction_data:
+            for i, kf in enumerate(self.extraction_data.get("keyframes", [])):
                 keyframes.append({
                     "idx": i,
+                    "frame_index": kf.get("frame_index", i),
                     "frame_path": kf["frame_path"],
                     "timestamp": kf.get("timestamp", 0.0),
-                    "scene_id": kf.get("scene_id", -1),
+                    "scene_id": self._resolve_scene_id(kf),
                 })
             print(f"从 extraction_result.json 加载 {len(keyframes)} 个关键帧")
         else:
@@ -129,6 +146,7 @@ class CharacterDetector:
             for i, fp in enumerate(frame_files):
                 keyframes.append({
                     "idx": i,
+                    "frame_index": i,
                     "frame_path": str(fp),
                     "timestamp": 0.0,
                     "scene_id": -1,
@@ -137,9 +155,39 @@ class CharacterDetector:
 
         return keyframes
 
-    def detect_faces(self, keyframes: List[dict]) -> List[FaceDetection]:
+    def _resolve_scene_id(self, keyframe: dict) -> int:
+        """优先用 extraction 提供的 scene_id，否则按时间/帧号回填"""
+        scene_id = keyframe.get("scene_id", -1)
+        if isinstance(scene_id, int) and scene_id >= 0:
+            return scene_id
+
+        timestamp_raw = keyframe.get("timestamp", 0.0)
+        frame_index_raw = keyframe.get("frame_index", -1)
+        timestamp = float(0.0 if timestamp_raw is None else timestamp_raw)
+        frame_index = int(-1 if frame_index_raw is None else frame_index_raw)
+
+        for scene in self.scene_ranges:
+            start_time_raw = scene.get("start_time", -1)
+            end_time_raw = scene.get("end_time", -1)
+            start_time = float(-1 if start_time_raw is None else start_time_raw)
+            end_time = float(-1 if end_time_raw is None else end_time_raw)
+            if start_time >= 0 and end_time >= 0 and start_time <= timestamp <= end_time:
+                return int(scene.get("scene_id", -1))
+
+            start_frame_raw = scene.get("start_frame", -1)
+            end_frame_raw = scene.get("end_frame", -1)
+            start_frame = int(-1 if start_frame_raw is None else start_frame_raw)
+            end_frame = int(-1 if end_frame_raw is None else end_frame_raw)
+            if frame_index >= 0 and start_frame >= 0 and end_frame >= 0:
+                if start_frame <= frame_index <= end_frame:
+                    return int(scene.get("scene_id", -1))
+
+        return -1
+
+    def detect_faces(self, keyframes: List[dict]) -> Tuple[List[FaceDetection], List[dict]]:
         """在每个关键帧中检测人脸并提取嵌入"""
         all_detections = []
+        frame_visible_people = []
 
         for kf in keyframes:
             frame_path = kf["frame_path"]
@@ -149,6 +197,17 @@ class CharacterDetector:
                 continue
 
             faces = self.app.get(img)
+            visible_count = len(faces)
+
+            frame_visible_people.append({
+                "keyframe_idx": kf["idx"],
+                "frame_index": kf.get("frame_index", kf["idx"]),
+                "frame_path": frame_path,
+                "timestamp": round(float(kf.get("timestamp", 0.0) or 0.0), 3),
+                "scene_id": kf.get("scene_id", -1),
+                "visible_people_estimate": visible_count,
+            })
+            print(f"  {Path(frame_path).name}: 单帧可见人数估计 {visible_count}")
 
             if not faces:
                 continue
@@ -170,10 +229,8 @@ class CharacterDetector:
                 detection.face_quality = self._compute_face_quality(detection, img.shape)
                 all_detections.append(detection)
 
-            print(f"  {Path(frame_path).name}: 检测到 {len(faces)} 张人脸")
-
         print(f"共检测到 {len(all_detections)} 张人脸")
-        return all_detections
+        return all_detections, frame_visible_people
 
     def _compute_face_quality(self, det: FaceDetection, img_shape: tuple) -> float:
         """
@@ -421,10 +478,10 @@ class CharacterDetector:
 
         # 2. 人脸检测
         print("\n[Phase 2] 人脸检测与特征提取...")
-        detections = self.detect_faces(keyframes)
+        detections, frame_visible_people = self.detect_faces(keyframes)
         if not detections:
             print("未检测到人脸")
-            return self._empty_result(total_keyframes=len(keyframes))
+            return self._empty_result(total_keyframes=len(keyframes), frame_visible_people=frame_visible_people)
 
         # 3. 聚类
         print("\n[Phase 3] 跨帧聚类...")
@@ -441,17 +498,87 @@ class CharacterDetector:
 
         # 6. 保存结果
         print("\n[保存] 写入结果...")
-        result = self._save_results(profiles, len(keyframes), len(detections))
+        result = self._save_results(profiles, len(keyframes), len(detections), frame_visible_people)
 
         print(f"\n结果已保存到: {self.output_path}")
         print(f"角色面部裁切: {self.characters_dir}/")
-        print(f"共识别 {len(profiles)} 个角色")
+        print(f"跨帧人脸聚类数: {len(profiles)}")
+        stable_visible = result.get("visible_people_stats", {}).get("stable_visible_people_estimate", 0)
+        if stable_visible:
+            print(f"稳定可见人数估计: {stable_visible}")
 
         return result
 
-    def _save_results(self, profiles: List[CharacterProfile],
-                      total_keyframes: int, total_faces: int) -> dict:
+    def _build_count_stats(self, counts: List[int]) -> dict:
+        """汇总单帧可见人数统计"""
+        if not counts:
+            return {
+                "sampled_keyframes": 0,
+                "frames_with_faces": 0,
+                "min_visible_people": 0,
+                "median_visible_people": 0,
+                "max_visible_people": 0,
+                "avg_visible_people": 0.0,
+                "stable_visible_people_estimate": 0,
+            }
+
+        nonzero_counts = [c for c in counts if c > 0]
+        stable_source = nonzero_counts or counts
+
+        return {
+            "sampled_keyframes": len(counts),
+            "frames_with_faces": len(nonzero_counts),
+            "min_visible_people": int(min(stable_source)),
+            "median_visible_people": round(float(np.median(stable_source)), 2),
+            "max_visible_people": int(max(counts)),
+            "avg_visible_people": round(float(np.mean(counts)), 2),
+            "stable_visible_people_estimate": int(round(float(np.median(stable_source)))),
+        }
+
+    def _build_scene_visible_people_stats(self, frame_visible_people: List[dict]) -> List[dict]:
+        """按场景汇总人数统计"""
+        stats = []
+        frames_by_scene = {}
+
+        for frame in frame_visible_people:
+            scene_id = frame.get("scene_id", -1)
+            frames_by_scene.setdefault(scene_id, []).append(frame)
+
+        if self.scene_ranges:
+            for scene in self.scene_ranges:
+                scene_id = int(scene.get("scene_id", -1))
+                frames = frames_by_scene.get(scene_id, [])
+                counts = [item.get("visible_people_estimate", 0) for item in frames]
+                item = {
+                    "scene_id": scene_id,
+                    "time_range": (
+                        f"{float(scene.get('start_time', 0.0) or 0.0):.1f}-"
+                        f"{float(scene.get('end_time', 0.0) or 0.0):.1f}s"
+                    ),
+                }
+                item.update(self._build_count_stats(counts))
+                stats.append(item)
+            return stats
+
+        for scene_id, frames in sorted(frames_by_scene.items()):
+            counts = [item.get("visible_people_estimate", 0) for item in frames]
+            item = {"scene_id": scene_id, "time_range": "[unknown]"}
+            item.update(self._build_count_stats(counts))
+            stats.append(item)
+
+        return stats
+
+    def _save_results(
+        self,
+        profiles: List[CharacterProfile],
+        total_keyframes: int,
+        total_faces: int,
+        frame_visible_people: List[dict],
+    ) -> dict:
         """保存结果为 JSON"""
+        visible_people_stats = self._build_count_stats(
+            [item.get("visible_people_estimate", 0) for item in frame_visible_people]
+        )
         result = {
             "version": "1.0.0",
             "analysis_timestamp": datetime.now().isoformat(),
@@ -459,6 +586,10 @@ class CharacterDetector:
             "total_keyframes_analyzed": total_keyframes,
             "total_faces_detected": total_faces,
             "unique_characters": len(profiles),
+            "counting_basis": "per_keyframe_face_detection",
+            "visible_people_stats": visible_people_stats,
+            "scene_visible_people_stats": self._build_scene_visible_people_stats(frame_visible_people),
+            "frame_visible_people": frame_visible_people,
             "clustering_config": {
                 "model": "buffalo_l",
                 "similarity_threshold": self.similarity_threshold,
@@ -489,8 +620,9 @@ class CharacterDetector:
 
         return result
 
-    def _empty_result(self, total_keyframes: int = 0) -> dict:
+    def _empty_result(self, total_keyframes: int = 0, frame_visible_people: Optional[List[dict]] = None) -> dict:
         """无检测结果时的空输出"""
+        frame_visible_people = frame_visible_people or []
         result = {
             "version": "1.0.0",
             "analysis_timestamp": datetime.now().isoformat(),
@@ -498,6 +630,12 @@ class CharacterDetector:
             "total_keyframes_analyzed": total_keyframes,
             "total_faces_detected": 0,
             "unique_characters": 0,
+            "counting_basis": "per_keyframe_face_detection",
+            "visible_people_stats": self._build_count_stats(
+                [item.get("visible_people_estimate", 0) for item in frame_visible_people]
+            ),
+            "scene_visible_people_stats": self._build_scene_visible_people_stats(frame_visible_people),
+            "frame_visible_people": frame_visible_people,
             "clustering_config": {
                 "model": "buffalo_l",
                 "similarity_threshold": self.similarity_threshold,
@@ -544,7 +682,10 @@ def main():
     result = detector.run()
 
     print("\n" + "=" * 70)
-    print(f"角色检测完成: {result['unique_characters']} 个角色")
+    print(f"角色检测完成: 跨帧人脸聚类数 {result['unique_characters']}")
+    stable_visible = result.get("visible_people_stats", {}).get("stable_visible_people_estimate", 0)
+    if stable_visible:
+        print(f"稳定可见人数估计: {stable_visible}")
     print("=" * 70)
 
 

@@ -1,0 +1,141 @@
+{
+  "_template_description": "步骤3.6输出 - 6棱镜语义分析骨架。Claude 必须先按固定提问框架梳理视频，再进入角色细化与 prompt 编写。",
+  "_output_path": "output/analysis/semantic_analysis.json",
+  "_important": "固定的是提问框架，不是分类答案。允许 final_label 未确认，但不允许跳过 6 棱镜。",
+
+  "analysis_level": "level_1",
+  "media_baseline": {
+    "source_resolution": "540x960",
+    "source_aspect_ratio": "9:16",
+    "orientation": "vertical",
+    "duration": 29.8,
+    "scene_count": 3,
+    "keyframe_count": 64,
+    "audio_mode": "music_only / narration / dialogue / silent",
+    "understanding_mode": "asr_plus_visual / visual_only / mixed"
+  },
+  "global_summary": {
+    "content_mode": "训练 / 表演 / 剧情 / 口播 / 纪录 / 教程 / 商品展示 / 纯氛围",
+    "visual_style": "写实纪实 / 电影感 / 社媒短视频 / 产品展示",
+    "open_world_status": "identified / partial / unknown",
+    "summary_note": "对整条视频的总体判断，可保留不确定性"
+  },
+  "generation_contract": {
+    "source_visual_mode": "live_action / stylized_live_action / anime / unknown",
+    "target_visual_mode": "live_action / stylized_live_action / anime",
+    "mode_lock_reason": "为什么整项目统一锁定成这一种形态；如因模型限制降级也必须写明",
+    "fallback_policy": "如模型能力不足，只允许整项目统一降级，不允许局部混用",
+    "character_reference_mode": "通常与 target_visual_mode 一致；仅当 source_visual_mode 为真人时，如平台受限制不能直接用真人参考图，也可统一锁定为 pseudo_realistic_human_illustration",
+    "scene_generation_mode": "必须与 target_visual_mode 完全一致",
+    "required_keywords": ["该目标形态必须出现的关键词"],
+    "forbidden_keywords": ["该目标形态禁止出现的关键词"],
+    "consistency_rules": [
+      "步骤8和步骤9都必须服从同一份 generation_contract",
+      "scene_generation_mode 必须与 target_visual_mode 完全一致",
+      "如果 character_reference_mode 与 target_visual_mode 不同，只允许整项目统一采用写实人物插画桥接方案，且 source_visual_mode 必须是真人"
+    ]
+  },
+  "style_consistency": {
+    "style_family": "统一项目风格名称，必须与 target_visual_mode 保持一致",
+    "character_render_mode": "角色参考图的统一表现形态，必须完全服从 generation_contract.character_reference_mode；真人项目走桥接时，也必须是写实人物插画参考图，并保持真人比例、真实皮肤明暗和布料褶皱",
+    "scene_render_mode": "场景视频的统一表现形态，必须完全服从 generation_contract.scene_generation_mode，不能把最终视频带偏成插画或卡通",
+    "lighting_rule": "统一光线逻辑，如：暖黄室内顶灯，避免戏剧化补光",
+    "palette_rule": "统一主色倾向和服装配色，不要跳色",
+    "background_rule": "角色参考图必须单人、纯净浅色背景、不带第二个人",
+    "framing_rule": "角色参考图默认平视、胸像到半身、单人居中；核心角色还要补全身服装锚点图",
+    "costume_rule": "服装材质、颜色、版型沿用原视频，不要时装化",
+    "character_prompt_block": "步骤8每次生角色图都必须先读取 generation_contract.character_reference_mode；只有 source_visual_mode 为真人时，才能走写实人物插画桥接；多人场景至少给核心角色补 identity_portrait + full_body_outfit",
+    "scene_prompt_block": "步骤9每次生场景都必须先读取 generation_contract.scene_generation_mode；输入参考图只锁定身份、发型、服装和鞋子，最终画面仍必须服从 scene_generation_mode；多人场景必须用 main_character + visible_characters 的多张参考图防止同脸",
+    "must_keep": [
+      "同一项目只能有一种目标形态",
+      "scene_generation_mode 与 target_visual_mode 一致",
+      "角色参考图和场景视频都服从同一份 generation_contract",
+      "人物脸部与材质表达方式一致",
+      "多人场景的人脸和发型必须分开",
+      "核心角色的裤型和鞋型必须稳定"
+    ],
+    "negative_constraints": [
+      "角色参考图不要画成漫画脸、二次元大眼或赛璐璐阴影",
+      "不要跳过 visible_characters 导致多人场景只喂一张参考图",
+      "不要某一段单独降级成别的风格",
+      "不要把 live_action、stylized_live_action、anime 的关键词混在同一个项目里",
+      "不要把群像做成同一张脸复制",
+      "不要让主角色或关键服装角色突然换裤子或换鞋"
+    ]
+  },
+  "scene_prisms": [
+    {
+      "scene_id": 0,
+      "time_range": "0-9.5s",
+      "narrative_prism": {
+        "dramatic_purpose": "这段在讲什么 / 这镜只完成什么",
+        "coarse_category": "indoor_group_activity",
+        "candidate_labels": ["group_training", "stage_rehearsal"],
+        "final_label": "group_training",
+        "label_status": "identified / partial / unknown",
+        "subtype_judgment": {
+          "domain": "训练 / 表演 / 仪式 / 课堂 / 比赛 / 商品展示 / 剧情 / 口播 / unknown",
+          "subtype_candidates": ["基础练习", "排练", "课堂演示"],
+          "final_subtype": "基础练习",
+          "confidence": "high / medium / low",
+          "decision_reason": "用一句话说明为什么是这个子类，而不是相似类别"
+        }
+      },
+      "subject_prism": {
+        "primary_subjects": ["char_0", "char_1"],
+        "subject_scale": "small_group",
+        "organization": "rows / dialogue / collaboration / performance",
+        "role_relationship": "教学 / 协作 / 围观 / 对抗 / 表演",
+        "identity_clues": ["统一服装", "同类年龄层", "角色站位关系"]
+      },
+      "action_prism": {
+        "primary_action": "training / speaking / performing / operating",
+        "action_pattern": "static / repetitive / synchronized / chained / explosive",
+        "movement_intensity": "low / medium / high",
+        "tempo_rhythm": "steady / pulsed / accelerating",
+        "interaction_mode": "solo / group_sync / collaboration / confrontation",
+        "stage_beats": ["起始状态", "中段推进", "结果落点"],
+        "behavior_judgment": {
+          "behavior_label": "基础步法训练 / 队列推进 / 跟练 / 示范",
+          "behavior_summary": "一句话说明主体到底在做什么",
+          "behavior_evidence": ["支撑该行为判断的动作证据"],
+          "distinguishing_features": ["能把它与相似行为区分开的动作特征"]
+        }
+      },
+      "scene_prism": {
+        "location_space": "室内训练馆 / 教室 / 厨房 / 街道 / 舞台",
+        "lighting": "室内暖黄顶灯 / 自然日光 / 冷色漫射光",
+        "props": ["道具或器材"],
+        "evidence": {
+          "clothing": ["统一深色上衣", "深色长裤"],
+          "footwear": ["分趾舞鞋"],
+          "props_equipment": [],
+          "text_signals": ["女踊り", "基礎練習"],
+          "environment_clues": ["木地板", "馆内顶灯"]
+        },
+        "evidence_chain": {
+          "direct_evidence": ["最直接支撑判断的证据，如鞋型 / 文字 / 关键动作"],
+          "supporting_evidence": ["辅助支撑的证据，如队形 / 服装 / 场地"],
+          "counter_hypotheses": ["容易混淆的解释，如健身操 / 演出 / 普通活动"],
+          "unresolved_points": ["当前还不能完全确认的点"]
+        }
+      },
+      "camera_prism": {
+        "shot_type": "visible_subject / offscreen_reaction / transition_reveal / free_atmosphere",
+        "framing": "wide / medium / close",
+        "camera_angle": "eye_level / low_angle / high_angle",
+        "camera_movement": "static / pan / push / follow",
+        "camera_focus": "队列整体 / 主体前排 / 局部动作"
+      },
+      "constraint_prism": {
+        "must_keep": ["主体规模", "队形关系", "关键服装或鞋型"],
+        "should_keep": ["暖黄室内灯光", "训练馆氛围"],
+        "must_not_change": ["分趾舞鞋", "统一深色训练服"],
+        "must_not_generate": ["不要生成成正式舞台演出", "不要把队列生成成散乱围观"],
+        "continuity_focus": ["主体站位连续", "空间关系稳定"],
+        "negative_constraints": ["不能生成错的高风险事实，如鞋型 / 舞种 / 文字 / 空间用途"]
+      }
+    }
+  ],
+  "inference_notes": "如有不确定项，说明缺失的证据、候选判断与为什么暂不下结论。"
+}

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 共用 API 客户端
-提供凭证加载、图片编码、Seedance/Seedream API 调用封装
+提供凭证加载、图片编码、图像/视频 API 调用封装
 """
 
 import asyncio
@@ -132,8 +132,157 @@ async def download_file(session: aiohttp.ClientSession, url: str, output: Path) 
         return False
 
 
+def _extract_first_string(value: Any) -> str | None:
+    """从字符串或字符串数组中提取第一个可用字符串。"""
+    if isinstance(value, str) and value:
+        return value
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, str) and item:
+                return item
+    return None
+
+
+def _extract_image_url(payload: Any) -> str | None:
+    """从常见图片响应结构中提取 URL。"""
+    if isinstance(payload, list):
+        for item in payload:
+            result = _extract_image_url(item)
+            if result:
+                return result
+        return None
+
+    if isinstance(payload, dict):
+        for key in ("url", "image_url"):
+            result = _extract_first_string(payload.get(key))
+            if result:
+                return result
+        for key in ("data", "result", "images"):
+            if key in payload:
+                result = _extract_image_url(payload[key])
+                if result:
+                    return result
+    return None
+
+
+def _extract_image_b64(payload: Any) -> str | None:
+    """从常见图片响应结构中提取 base64 图片。"""
+    if isinstance(payload, list):
+        for item in payload:
+            result = _extract_image_b64(item)
+            if result:
+                return result
+        return None
+
+    if isinstance(payload, dict):
+        b64 = payload.get("b64_json")
+        if isinstance(b64, str) and b64:
+            return b64
+        for key in ("data", "result", "images"):
+            if key in payload:
+                result = _extract_image_b64(payload[key])
+                if result:
+                    return result
+    return None
+
+
+def _extract_task_id(payload: Any) -> str | None:
+    """从常见异步任务响应结构中提取 task_id。"""
+    if isinstance(payload, list):
+        for item in payload:
+            result = _extract_task_id(item)
+            if result:
+                return result
+        return None
+
+    if isinstance(payload, dict):
+        task_id = payload.get("task_id")
+        if isinstance(task_id, str) and task_id:
+            return task_id
+        for key in ("data", "result"):
+            if key in payload:
+                result = _extract_task_id(payload[key])
+                if result:
+                    return result
+    return None
+
+
+def _save_base64_image(b64_data: str, output: Path) -> bool:
+    """将 base64 图片写入本地文件。"""
+    try:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(base64.b64decode(b64_data))
+        logger.info(f"已写入 base64 图片: {output}")
+        return True
+    except Exception as e:
+        logger.warning(f"写入 base64 图片失败: {e}")
+        return False
+
+
+async def _poll_apimart_image_task(
+    session: aiohttp.ClientSession,
+    api_base: str,
+    api_key: str,
+    task_id: str,
+    output_path: Path,
+    poll_interval: int = 3,
+    poll_max_wait: int = 300,
+) -> bool:
+    """轮询 ApiMart 图片任务直到拿到最终图片。"""
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    loop = asyncio.get_running_loop()
+    start = loop.time()
+    attempt = 0
+
+    while True:
+        attempt += 1
+        elapsed = loop.time() - start
+        if elapsed > poll_max_wait:
+            logger.error(f"ApiMart 图片任务轮询超时: {task_id}")
+            return False
+
+        try:
+            async with session.get(
+                f"{api_base.rstrip('/')}/tasks/{task_id}",
+                headers=headers,
+            ) as resp:
+                if resp.status != 200:
+                    body = await resp.text()
+                    logger.error(f"ApiMart 查询任务失败 ({resp.status}): {body[:200]}")
+                    return False
+
+                data = await resp.json()
+                task_data = data.get("data", {})
+                status = str(task_data.get("status", "unknown")).lower()
+                progress = task_data.get("progress", 0)
+                logger.info(
+                    f"ApiMart 图片任务 {task_id}: attempt={attempt}, status={status}, progress={progress}"
+                )
+
+                if status in {"succeeded", "completed"}:
+                    image_url = _extract_image_url(task_data)
+                    if image_url:
+                        return await download_file(session, image_url, output_path)
+                    image_b64 = _extract_image_b64(task_data)
+                    if image_b64:
+                        return _save_base64_image(image_b64, output_path)
+                    logger.error(f"ApiMart 任务完成但未返回图片: {task_data}")
+                    return False
+
+                if status in {"failed", "error"}:
+                    logger.error(f"ApiMart 图片任务失败: {task_data}")
+                    return False
+        except Exception as e:
+            logger.warning(f"ApiMart 图片任务轮询异常: {e}")
+
+        await asyncio.sleep(poll_interval)
+
+
 # ---------------------------------------------------------------------------
-# Seedream 图像生成
+# 图像生成
 # ---------------------------------------------------------------------------
 
 async def generate_seedream_image(
@@ -143,7 +292,7 @@ async def generate_seedream_image(
     api_key_override: str | None = None,
     image_urls: list[str] | None = None,
 ) -> bool:
-    """调用 Seedream API 生成图片"""
+    """调用配置好的图片 API 生成图片。"""
     if config is None:
         config = load_config()
     img_cfg = get_model_config("image", config)
@@ -155,16 +304,24 @@ async def generate_seedream_image(
         return False
 
     payload = {
-        "model": img_cfg.get("model", "doubao-seedream-4-0-250828"),
+        "model": img_cfg.get(
+            "model",
+            "gemini-3.1-flash-image-preview" if provider == "apimart" else "doubao-seedream-4-0-250828",
+        ),
         "prompt": prompt,
-        "size": img_cfg.get("size", "2K"),
-        "response_format": img_cfg.get("response_format", "url"),
-        "watermark": img_cfg.get("watermark", False),
+        "size": img_cfg.get("size", "3:4" if provider == "apimart" else "2K"),
     }
+    if provider == "apimart":
+        payload["n"] = int(img_cfg.get("n", 1) or 1)
+    else:
+        payload["response_format"] = img_cfg.get("response_format", "url")
+        payload["watermark"] = img_cfg.get("watermark", False)
     if image_urls:
         payload["image_urls"] = image_urls
 
     timeout = img_cfg.get("timeout", 120)
+    poll_interval = int(img_cfg.get("poll_interval", 3) or 3)
+    poll_max_wait = int(img_cfg.get("poll_max_wait", 300) or 300)
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=timeout)) as session:
             async with session.post(
@@ -177,16 +334,33 @@ async def generate_seedream_image(
             ) as resp:
                 if resp.status != 200:
                     body = await resp.text()
-                    logger.error(f"Seedream 请求失败 ({resp.status}): {body[:200]}")
+                    logger.error(f"{provider} 图片请求失败 ({resp.status}): {body[:200]}")
                     return False
                 data = await resp.json()
-                url = data.get("data", [{}])[0].get("url")
+                task_id = _extract_task_id(data)
+                if provider == "apimart" and task_id:
+                    return await _poll_apimart_image_task(
+                        session,
+                        creds["api_base"],
+                        creds["api_key"],
+                        task_id,
+                        output_path,
+                        poll_interval=poll_interval,
+                        poll_max_wait=poll_max_wait,
+                    )
+
+                url = _extract_image_url(data)
                 if url:
                     return await download_file(session, url, output_path)
-                logger.error(f"Seedream 返回无 URL: {data}")
+
+                image_b64 = _extract_image_b64(data)
+                if image_b64:
+                    return _save_base64_image(image_b64, output_path)
+
+                logger.error(f"{provider} 图片返回无可用结果: {data}")
                 return False
     except Exception as e:
-        logger.error(f"Seedream 异常: {e}")
+        logger.error(f"{provider} 图片生成异常: {e}")
         return False
 
 

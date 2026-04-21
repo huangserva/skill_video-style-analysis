@@ -69,10 +69,13 @@ def transcribe_with_whisper(audio_path, output_json_path, model_size="base", lan
     
     try:
         import whisper
+        output_dir = Path(output_json_path).resolve().parent
+        whisper_cache_dir = output_dir / ".whisper_cache"
+        whisper_cache_dir.mkdir(parents=True, exist_ok=True)
         
         # 加载模型
         print(f"  正在加载Whisper模型...")
-        model = whisper.load_model(model_size)
+        model = whisper.load_model(model_size, download_root=str(whisper_cache_dir))
         
         # 转录
         print(f"  正在进行语音转录...")
@@ -220,10 +223,10 @@ def main():
         print(f"❌ 错误：视频文件不存在: {args.video_path}")
         return 1
     
-    # 创建临时音频文件
-    temp_audio_path = args.video_path.replace('.mp4', '_extracted_audio.wav')
-    if args.video_path.endswith('.mov'):
-        temp_audio_path = args.video_path.replace('.mov', '_extracted_audio.wav')
+    # 创建临时音频文件，写到输出目录避免回写原视频目录
+    output_dir = Path(args.output_path).resolve().parent
+    output_dir.mkdir(parents=True, exist_ok=True)
+    temp_audio_path = str(output_dir / f"{Path(args.video_path).stem}_extracted_audio.wav")
     
     # 步骤1：提取音频
     print(f"\n[步骤1] 提取音频轨道...")

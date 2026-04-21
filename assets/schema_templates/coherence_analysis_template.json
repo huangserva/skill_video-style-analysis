@@ -22,7 +22,7 @@
   "scene_analysis": [
     {
       "scene_id": 0,
-      "description": "场景描述，如：哈佛校门前，阳光明媚",
+      "description": "场景描述，如：室内训练空间，暖黄顶灯，主体成队列分布",
       "characters_present": ["char_0"],
       "mood": "温暖/紧张/平静"
     }

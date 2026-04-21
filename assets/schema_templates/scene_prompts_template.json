@@ -4,24 +4,104 @@
   "_important": "角色 id 必须与 character_detection.json 中的 label 一致（如 char_0），确保步骤8生成的参考图能被步骤9正确查找。",
 
   "visual_style_prompt": "电影感，warm_yellow色调，缓慢推拉镜头，流畅转场",
-
+  "generation_contract": {
+    "source_visual_mode": "live_action / stylized_live_action / anime / unknown",
+    "target_visual_mode": "live_action / stylized_live_action / anime",
+    "mode_lock_reason": "为什么整项目统一锁定成这一种形态；如因模型限制降级也必须写明",
+    "fallback_policy": "如模型能力不足，只允许整项目统一降级，不允许局部混用",
+    "character_reference_mode": "通常与 target_visual_mode 一致；仅当 source_visual_mode 为真人时，如平台受限制不能直接用真人参考图，也可统一锁定为 pseudo_realistic_human_illustration",
+    "scene_generation_mode": "必须与 target_visual_mode 完全一致",
+    "required_keywords": ["该目标形态必须出现的关键词"],
+    "forbidden_keywords": ["该目标形态禁止出现的关键词"],
+    "consistency_rules": [
+      "步骤8和步骤9都必须服从同一份 generation_contract",
+      "scene_generation_mode 必须与 target_visual_mode 完全一致",
+      "如果 character_reference_mode 与 target_visual_mode 不同，只允许整项目统一采用写实人物插画桥接方案，且 source_visual_mode 必须是真人"
+    ]
+  },
+  "style_consistency": {
+    "style_family": "统一项目风格名称，必须与 target_visual_mode 保持一致",
+    "character_render_mode": "角色参考图的统一表现形态，必须完全服从 generation_contract.character_reference_mode；真人项目走桥接时，也必须是写实人物插画参考图，并保持真人比例、真实皮肤明暗和布料褶皱",
+    "scene_render_mode": "场景视频的统一表现形态，必须完全服从 generation_contract.scene_generation_mode，不能把最终视频带偏成插画或卡通",
+    "lighting_rule": "统一光线逻辑，如：暖黄室内顶灯，避免戏剧化补光",
+    "palette_rule": "统一主色倾向和服装配色，不要跳色",
+    "background_rule": "角色参考图必须单人、纯净浅色背景、不带第二个人",
+    "framing_rule": "角色参考图默认平视、胸像到半身、单人居中；核心角色还要补全身服装锚点图",
+    "costume_rule": "服装材质、颜色、版型沿用原视频，不要时装化",
+    "character_prompt_block": "步骤8每次生角色图都必须先读取 generation_contract.character_reference_mode；只有 source_visual_mode 为真人时，才能走写实人物插画桥接；多人场景至少给核心角色补 identity_portrait + full_body_outfit",
+    "scene_prompt_block": "步骤9每次生场景都必须先读取 generation_contract.scene_generation_mode；输入参考图只锁定身份、发型、服装和鞋子，最终画面仍必须服从 scene_generation_mode；多人场景必须用 main_character + visible_characters 的多张参考图防止同脸",
+    "must_keep": [
+      "同一项目只能有一种目标形态",
+      "scene_generation_mode 与 target_visual_mode 一致",
+      "角色参考图和场景视频都服从同一份 generation_contract",
+      "人物脸部与材质表达方式一致",
+      "多人场景的人脸和发型必须分开",
+      "核心角色的裤型和鞋型必须稳定"
+    ],
+    "negative_constraints": [
+      "角色参考图不要画成漫画脸、二次元大眼或赛璐璐阴影",
+      "不要跳过 visible_characters 导致多人场景只喂一张参考图",
+      "不要某一段单独降级成别的风格",
+      "不要把 live_action、stylized_live_action、anime 的关键词混在同一个项目里",
+      "不要把群像做成同一张脸复制",
+      "不要让主角色或关键服装角色突然换裤子或换鞋"
+    ]
+  },
+  "video_generation": {
+    "source_resolution": "540x960",
+    "source_aspect_ratio": "9:16",
+    "target_resolution": "540x960",
+    "provider_ratio": "9:16",
+    "provider_resolution": "720p",
+    "prompt_prefix": "[按 target_visual_mode 填写统一前缀], 9:16 vertical, 540x960"
+  },
   "characters": [
     {
-      "id": "char_0（必填，与 character_detection.json 的 label 一致）",
+      "id": "char_0",
       "name": "角色名，如：顧杰森",
       "gender": "男性/女性（必填）",
       "age": "25-35岁",
       "appearance": "东亚男性，黑色短发，剑眉星目（必填）",
       "clothing": "浅粉衬衫（如有换装用→分隔：浅粉衬衫→灰色T恤）"
+    },
+    {
+      "id": "char_1",
+      "name": "角色乙",
+      "gender": "女性",
+      "age": "20-30岁",
+      "appearance": "东亚女性，深色长发，五官清晰",
+      "clothing": "深色训练服"
+    },
+    {
+      "id": "char_2",
+      "name": "角色丙",
+      "gender": "女性",
+      "age": "20-30岁",
+      "appearance": "东亚女性，短发或束发",
+      "clothing": "深色训练服"
     }
   ],
-
+  "character_ref_prompts": [
+    {
+      "character_id": "char_0",
+      "reference_type": "identity_portrait / full_body_outfit",
+      "prompt": "先读取 generation_contract.character_reference_mode，再按 reference_type 写角色参考提示词；identity_portrait 锁脸型发型，full_body_outfit 锁长裤和鞋子"
+    }
+  ],
   "scenes": [
     {
       "scene_id": 0,
-      "prompt": "realistic photo style, live action, 16:9 widescreen, 1280x720, 哈佛校门前，阳光明媚，char_0 穿浅粉衬衫站在校门前（必填，必须以 realistic photo style 开头）",
+      "prompt": "[按 target_visual_mode 填写统一前缀], 9:16 vertical, 540x960, 室内训练空间，暖黄顶灯，char_0 位于队列前侧进行基础动作练习",
       "duration": 5,
-      "main_character": "char_0（必填，用于查找步骤8生成的角色参考图）",
+      "main_character": "char_0",
+      "visible_characters": ["char_0", "char_1", "char_2"],
+      "semantic_anchor": {
+        "content_type": "训练 / 表演 / 仪式 / 课堂 / 比赛 / 商品展示 / 剧情 / unknown",
+        "subtype_judgment": "当前场景更细的子类判断，如：女子舞踊基础练习 / 课堂示范 / 队列排练",
+        "behavior_summary": "一句话说明主体到底在做什么，不能只写抽象词",
+        "evidence_to_preserve": ["必须在生成中保留的证据，如鞋型 / 字样 / 道具 / 队形"],
+        "negative_constraints": ["最容易生成错的点，如不要把训练生成成演出 / 不要把分趾鞋生成成运动鞋"]
+      },
       "extra_refs": []
     }
   ]
